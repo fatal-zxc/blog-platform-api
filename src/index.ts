@@ -17,7 +17,7 @@ app.use(cors())
 
 app.use('', userRouter)
 app.use('', articleRouter)
-app.use('/avatars', express.static('src/static/avatars'))
+app.use('/avatars', express.static('static/avatars'))
 
 async function start() {
   try {
