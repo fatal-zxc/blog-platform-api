@@ -1,19 +1,21 @@
 import bcryptjs from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import dotenv from 'dotenv'
+import { UploadedFile } from 'express-fileupload'
 
 dotenv.config()
 
 import db from '../db.js'
 import FileService from './FileService.js'
+import { User, AuthToken } from '../types'
 
-const generateAccessToken = (id) => {
-  const payload = {id}
+const generateAccessToken = (id: number) => {
+  const payload = { id }
   const secret = String(process.env.SECRET)
-  return jwt.sign(payload, secret, {expiresIn: '24h'})
+  return jwt.sign(payload, secret, { expiresIn: '24h' })
 }
 
-const validateUsers = (username: string, password: string, email: string) => {
+const validateUsers = (username: string, password: string, email: string): void => {
   if (!username) {
     throw new Error('отсутствует имя пользователя')
   }
@@ -46,15 +48,18 @@ const validateUsers = (username: string, password: string, email: string) => {
 }
 
 class UserService {
-  async create(user, avatar?) {
+  async create(user: User, avatar?: UploadedFile) {
     const { username, password, email } = user
     const hashPassword = bcryptjs.hashSync(password, 5)
     validateUsers(username, password, email)
 
     if (!avatar) {
-      const createdUser = await db.query(`INSERT INTO users (username, password, email) values ($1, $2, $3) RETURNING *`, [username, hashPassword, email])
+      const createdUser: { rows: User[] } = await db.query(
+        `INSERT INTO users (username, password, email) values ($1, $2, $3) RETURNING *`,
+        [username, hashPassword, email]
+      )
       const token = generateAccessToken(createdUser.rows[0].id)
-      return {user: createdUser.rows[0], token}
+      return { user: createdUser.rows[0], token }
     }
 
     if (avatar.mimetype.split('/')[0] !== 'image') {
@@ -63,13 +68,16 @@ class UserService {
 
     const fileName = await FileService.saveImage(avatar)
 
-    const createdUser = await db.query(`INSERT INTO users (username, password, email, avatar) values ($1, $2, $3, $4) RETURNING *`, [username, hashPassword, email, fileName])
+    const createdUser: { rows: User[] } = await db.query(
+      `INSERT INTO users (username, password, email, avatar) values ($1, $2, $3, $4) RETURNING *`,
+      [username, hashPassword, email, fileName]
+    )
     const token = generateAccessToken(createdUser.rows[0].id)
-    return {user: createdUser.rows[0], token}
+    return { user: createdUser.rows[0], token }
   }
 
-  async login({email, password}) {
-    const user = await db.query(`SELECT * FROM users where email = $1`, [email])
+  async login({ email, password }: User) {
+    const user: { rows: User[] } = await db.query(`SELECT * FROM users where email = $1`, [email])
     if (!user.rows[0]) {
       throw new Error('пользователь с таким email не найден')
     }
@@ -82,36 +90,44 @@ class UserService {
   }
 
   async getAll() {
-    const users = await db.query(`SELECT * FROM users`)
+    const users: { rows: User[] } = await db.query(`SELECT * FROM users`)
     return users.rows
   }
 
-  async getOne(id) {
+  async getOne(id: number) {
     if (!id) {
       throw new Error('не указан id')
     }
-    const user = await db.query(`SELECT * FROM users where id = $1`, [id])
+    const user: { rows: User[] } = await db.query(`SELECT * FROM users where id = $1`, [id])
     return user.rows[0]
   }
 
-  async getUser(tokenData) {
-    const id = tokenData.id
-    const user = await db.query(`SELECT * FROM users where id = $1`, [id])
+  async getUser(tokenData?: AuthToken) {
+    const id = tokenData?.id
+    const user: { rows: User[] } = await db.query(`SELECT * FROM users where id = $1`, [id])
     return user.rows[0]
   }
 
-  async update(user, tokenData, avatar?) {
+  async update(user: User, tokenData?: AuthToken, avatar?: UploadedFile) {
     const { username, password, email } = user
-    const id = tokenData.id
+    const id = tokenData?.id
     validateUsers(username, password, email)
-    
-    const prevUser = await db.query(`SELECT * FROM users where id = $1`, [id])
 
-    let hashPassword
+    const prevUser: { rows: User[] } = await db.query(`SELECT * FROM users where id = $1`, [id])
+
+    let hashPassword: string = ''
     if (password) hashPassword = bcryptjs.hashSync(password, 5)
 
     if (!avatar) {
-      const updatedUser = await db.query(`UPDATE users set username = $1, password = $2, email = $3 where id = $4 RETURNING *`, [!username ? prevUser.rows[0].username : username, !hashPassword ? prevUser.rows[0].password : hashPassword, !email ? prevUser.rows[0].email : email, id])
+      const updatedUser: { rows: User[] } = await db.query(
+        `UPDATE users set username = $1, password = $2, email = $3 where id = $4 RETURNING *`,
+        [
+          !username ? prevUser.rows[0].username : username,
+          !hashPassword ? prevUser.rows[0].password : hashPassword,
+          !email ? prevUser.rows[0].email : email,
+          id,
+        ]
+      )
       return updatedUser.rows[0]
     }
 
@@ -122,12 +138,21 @@ class UserService {
     if (prevUser.rows[0].avatar) FileService.deleteFile(prevUser.rows[0].avatar, 'avatars')
     const fileName = await FileService.saveImage(avatar)
 
-    const updatedUser = await db.query(`UPDATE users set username = $1, password = $2, email = $3, avatar = $4 where id = $5 RETURNING *`, [!username ? prevUser.rows[0].username : username, !hashPassword ? prevUser.rows[0].password : hashPassword, !email ? prevUser.rows[0].email : email, fileName, id])
+    const updatedUser: { rows: User[] } = await db.query(
+      `UPDATE users set username = $1, password = $2, email = $3, avatar = $4 where id = $5 RETURNING *`,
+      [
+        !username ? prevUser.rows[0].username : username,
+        !hashPassword ? prevUser.rows[0].password : hashPassword,
+        !email ? prevUser.rows[0].email : email,
+        fileName,
+        id,
+      ]
+    )
     return updatedUser.rows[0]
   }
 
-  async delete({id}) {
-    const deletedUser = await db.query(`DELETE FROM users where id = $1 RETURNING *`, [id])
+  async delete(tokenData?: AuthToken) {
+    const deletedUser: { rows: User[] } = await db.query(`DELETE FROM users where id = $1 RETURNING *`, [tokenData?.id])
     if (deletedUser.rows[0].avatar) FileService.deleteFile(deletedUser.rows[0].avatar, 'avatars')
     return deletedUser.rows[0]
   }

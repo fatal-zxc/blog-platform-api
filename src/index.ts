@@ -10,9 +10,11 @@ const PORT = 5000
 const app = express()
 
 app.use(express.json())
-app.use(fileUpload({
-  limits: {fileSize: 50 * 1024 * 1024 }
-}))
+app.use(
+  fileUpload({
+    limits: { fileSize: 50 * 1024 * 1024 },
+  })
+)
 app.use(cors())
 
 app.use('', userRouter)

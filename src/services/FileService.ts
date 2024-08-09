@@ -2,11 +2,12 @@ import * as uuid from 'uuid'
 import path from 'path'
 import fs from 'fs'
 import util from 'util'
+import { UploadedFile } from 'express-fileupload'
 
 const readFile = util.promisify(fs.readFile)
 
 class FileService {
-  async saveImage(image) {
+  async saveImage(image: UploadedFile): Promise<string | undefined> {
     try {
       const fileName = uuid.v4() + image.name.slice(image.name.lastIndexOf('.'))
       const filePath = path.resolve('static/avatars', fileName)
@@ -17,7 +18,7 @@ class FileService {
     }
   }
 
-  saveMD(text) {
+  saveMD(text: string): string | undefined {
     try {
       const fileName = uuid.v4() + '.md'
       const filePath = path.resolve('static/articles', fileName)
@@ -28,16 +29,16 @@ class FileService {
     }
   }
 
-  async getFile(fileName: string, dir: string) {
+  async getFile(fileName: string, dir: string): Promise<string | undefined> {
     try {
       const filePath = path.resolve(`static/${dir}`, fileName)
-      const file = await readFile(filePath, {encoding: 'utf8'})
+      const file = await readFile(filePath, { encoding: 'utf8' })
       return file
     } catch (e) {
       console.log(e)
     }
   }
-  
+
   deleteFile(fileName: string, dir: string): void {
     try {
       const filePath = path.resolve(`static/${dir}`, fileName)

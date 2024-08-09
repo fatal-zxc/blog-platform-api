@@ -1,63 +1,66 @@
-import ArticleService from "../services/ArticleService.js"
+import { Response } from 'express'
+
+import ArticleService from '../services/ArticleService.js'
+import { MyRequest } from '../types.js'
 
 class ArticleController {
-  async create(req, res) {
+  async create(req: MyRequest, res: Response) {
     try {
-      const user = await ArticleService.create(req.body, req.user)
-      res.json(user)
+      const article = await ArticleService.create(req.body, req.user)
+      res.json(article)
     } catch (e: any) {
       res.status(500).json(e.message)
     }
   }
 
-  async getAll(req, res) {
+  async getAll(req: MyRequest, res: Response) {
     try {
       const users = await ArticleService.getAll(req.body, req.user)
       return res.json(users)
-    } catch (e) {
+    } catch (e: any) {
       res.status(500).json(e)
     }
   }
 
-  async getOne(req, res) {
+  async getOne(req: MyRequest, res: Response) {
     try {
-      const user = await ArticleService.getOne(req.params.id, req.user)
+      const user = await ArticleService.getOne(Number(req.params.id), req.user)
       return res.json(user)
     } catch (e: any) {
       res.status(500).json(e.message)
     }
   }
 
-  async update(req, res) {
+  async update(req: MyRequest, res: Response) {
     try {
-      const updatedUser = await ArticleService.update(req.body, req.user, req.params.id)
+      const updatedUser = await ArticleService.update(req.body, Number(req.params.id), req.user)
       return res.json(updatedUser)
     } catch (e: any) {
       res.status(500).json(e.message)
     }
   }
 
-  async favorite(req, res) {
+  async favorite(req: MyRequest, res: Response) {
     try {
-      const favoriteArticle = await ArticleService.favorite(req.params.id ,req.user)
+      const favoriteArticle = await ArticleService.favorite(Number(req.params.id), req.user)
       return res.json(favoriteArticle)
-    } catch (e:any) {
+    } catch (e: any) {
       res.status(500).json(e.message)
     }
   }
 
-  async unfavorite(req, res) {
+  async unfavorite(req: MyRequest, res: Response) {
     try {
-      const unfavoriteArticle = await ArticleService.unfavorite(req.params.id, req.user)
+      const unfavoriteArticle = await ArticleService.unfavorite(Number(req.params.id), req.user)
       return res.json(unfavoriteArticle)
-    } catch (e:any) {
+    } catch (e: any) {
       res.status(500).json(e.message)
     }
   }
 
-  async delete(req, res) {
+  async delete(req: MyRequest, res: Response) {
     try {
-      const deletedUser = await ArticleService.delete(req.params.id, req.user)
+      const deletedUser = await ArticleService.delete(Number(req.params.id), req.user)
       return res.json(deletedUser)
     } catch (e: any) {
       res.status(500).json(e.message)
