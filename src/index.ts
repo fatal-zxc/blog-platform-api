@@ -2,8 +2,8 @@ import express from 'express'
 import fileUpload from 'express-fileupload'
 import cors from 'cors'
 
-import userRouter from './routes/userRouter.js'
-import articleRouter from './routes/articleRouter.js'
+import userRouter from './routes/userRouter'
+import articleRouter from './routes/articleRouter'
 
 const PORT = 5000
 

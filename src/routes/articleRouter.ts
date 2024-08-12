@@ -1,8 +1,8 @@
 import { Router } from 'express'
 
-import ArticleController from '../controllers/ArticleController.js'
-import requareAuthMiddleware from '../middlewares/requareAuthMiddleware.js'
-import authMiddleware from '../middlewares/authMiddleware.js'
+import ArticleController from '../controllers/ArticleController'
+import requareAuthMiddleware from '../middlewares/requareAuthMiddleware'
+import authMiddleware from '../middlewares/authMiddleware'
 import { MyRequest } from '../types'
 
 const articleRouter = Router()

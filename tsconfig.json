@@ -1,12 +1,13 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "ESNext",
+    "target": "ES2016",
+    "module": "CommonJS",
     "outDir": "./dist",
     "rootDir": "./src",
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "moduleResolution": "Node", // Set module resolution to 'bundler'
+    "allowImportingTsExtensions": false,
     "isolatedModules": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -19,7 +20,10 @@
     "noImplicitAny": false,
   },
   "references": [{ "path": "./tsconfig.node.json" }],
+  "include": ["src/**/*.ts"],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "dist",
+    "src/__tests__"
   ]
 }

@@ -5,9 +5,9 @@ import { UploadedFile } from 'express-fileupload'
 
 dotenv.config()
 
-import db from '../db.js'
-import FileService from './FileService.js'
-import { User, AuthToken } from '../types'
+import db from '../db'
+import FileService from './FileService'
+import { UserReq, User, AuthToken } from '../types'
 
 const generateAccessToken = (id: number) => {
   const payload = { id }
@@ -48,10 +48,10 @@ const validateUsers = (username: string, password: string, email: string): void 
 }
 
 class UserService {
-  async create(user: User, avatar?: UploadedFile) {
+  async create(user: UserReq, avatar?: UploadedFile) {
     const { username, password, email } = user
-    const hashPassword = bcryptjs.hashSync(password, 5)
     validateUsers(username, password, email)
+    const hashPassword = bcryptjs.hashSync(password, 5)
 
     if (!avatar) {
       const createdUser: { rows: User[] } = await db.query(

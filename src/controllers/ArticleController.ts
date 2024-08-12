@@ -1,7 +1,7 @@
 import { Response } from 'express'
 
-import ArticleService from '../services/ArticleService.js'
-import { MyRequest } from '../types.js'
+import ArticleService from '../services/ArticleService'
+import { MyRequest } from '../types'
 
 class ArticleController {
   async create(req: MyRequest, res: Response) {

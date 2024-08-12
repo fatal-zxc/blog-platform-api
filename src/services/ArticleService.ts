@@ -1,7 +1,7 @@
 import { formatISO } from 'date-fns'
 
-import db from '../db.js'
-import FileService from './FileService.js'
+import db from '../db'
+import FileService from './FileService'
 import { Article, AuthToken, User } from '../types'
 
 const validateArticle = (title: string, body: string, description: string): void => {

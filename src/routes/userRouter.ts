@@ -1,8 +1,8 @@
 import { Router } from 'express'
 
-import UserController from '../controllers/UserController.js'
-import requareAuthMiddleware from '../middlewares/requareAuthMiddleware.js'
-import { MyRequest } from '../types.js'
+import UserController from '../controllers/UserController'
+import requareAuthMiddleware from '../middlewares/requareAuthMiddleware'
+import { MyRequest } from '../types'
 
 const userRouter = Router()
 

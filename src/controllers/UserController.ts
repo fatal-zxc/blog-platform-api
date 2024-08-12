@@ -1,6 +1,6 @@
 import { Response, Request } from 'express'
 
-import UserService from '../services/UserService.js'
+import UserService from '../services/UserService'
 import { MyRequest } from '../types'
 
 class UserController {

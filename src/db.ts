@@ -9,9 +9,6 @@ const pool = new pg.Pool({
   host: process.env.DB_HOST,
   port: Number(process.env.DB_PORT),
   database: process.env.DB_NAME,
-  ssl: {
-    rejectUnauthorized: false,
-  },
 })
 
 export default pool
