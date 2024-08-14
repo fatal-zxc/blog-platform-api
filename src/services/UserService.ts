@@ -7,7 +7,7 @@ dotenv.config()
 
 import db from '../db'
 import FileService from './FileService'
-import { UserReq, User, AuthToken } from '../types'
+import { User, AuthToken } from '../types'
 
 const generateAccessToken = (id: number) => {
   const payload = { id }
@@ -15,42 +15,48 @@ const generateAccessToken = (id: number) => {
   return jwt.sign(payload, secret, { expiresIn: '24h' })
 }
 
-const validateUsers = (username: string, password: string, email: string): void => {
-  if (!username) {
-    throw new Error('отсутствует имя пользователя')
-  }
-  if (username.length > 20) {
-    throw new Error('имя пользователя больше 20 символов')
-  }
-  if (username.length < 3) {
-    throw new Error('имя пользователя меньше 3 символов')
-  }
-
-  if (!password) {
-    throw new Error('отсутствует пароль')
-  }
-  if (password.length > 20) {
-    throw new Error('пароль больше 20 символов')
-  }
-  if (password.length < 6) {
-    throw new Error('пароль меньше 6 символов')
+export const validateUsersData = (username: string, password: string, email: string, exceptions?: string[]): void => {
+  if (!exceptions?.includes('username')) {
+    if (!username) {
+      throw new Error('отсутствует имя пользователя')
+    }
+    if (username.length > 20) {
+      throw new Error('имя пользователя больше 20 символов')
+    }
+    if (username.length < 3) {
+      throw new Error('имя пользователя меньше 3 символов')
+    }
   }
 
-  if (!email) {
-    throw new Error('отсутствует email')
+  if (!exceptions?.includes('password')) {
+    if (!password) {
+      throw new Error('отсутствует пароль')
+    }
+    if (password.length > 20) {
+      throw new Error('пароль больше 20 символов')
+    }
+    if (password.length < 6) {
+      throw new Error('пароль меньше 6 символов')
+    }
   }
-  if (email.length > 40) {
-    throw new Error('email больше 40 символов')
-  }
-  if (!/^[a-zA-Z0-9_.]+@[a-zA-Z0-9]+\.[a-zA-Z0-9-.]+$/.test(email)) {
-    throw new Error('некоректный email')
+
+  if (!exceptions?.includes('email')) {
+    if (!email) {
+      throw new Error('отсутствует email')
+    }
+    if (email.length > 40) {
+      throw new Error('email больше 40 символов')
+    }
+    if (!/^[a-zA-Z0-9_.]+@[a-zA-Z0-9]+\.[a-zA-Z0-9-.]+$/.test(email)) {
+      throw new Error('некоректный email')
+    }
   }
 }
 
 class UserService {
-  async create(user: UserReq, avatar?: UploadedFile) {
+  async create(user: User, avatar?: UploadedFile) {
     const { username, password, email } = user
-    validateUsers(username, password, email)
+    validateUsersData(username, password, email)
     const hashPassword = bcryptjs.hashSync(password, 5)
 
     if (!avatar) {
@@ -77,6 +83,7 @@ class UserService {
   }
 
   async login({ email, password }: User) {
+    validateUsersData('', password, email, ['username'])
     const user: { rows: User[] } = await db.query(`SELECT * FROM users where email = $1`, [email])
     if (!user.rows[0]) {
       throw new Error('пользователь с таким email не найден')
@@ -111,7 +118,7 @@ class UserService {
   async update(user: User, tokenData?: AuthToken, avatar?: UploadedFile) {
     const { username, password, email } = user
     const id = tokenData?.id
-    validateUsers(username, password, email)
+    validateUsersData(username, password, email)
 
     const prevUser: { rows: User[] } = await db.query(`SELECT * FROM users where id = $1`, [id])
 
@@ -153,7 +160,7 @@ class UserService {
 
   async delete(tokenData?: AuthToken) {
     const deletedUser: { rows: User[] } = await db.query(`DELETE FROM users where id = $1 RETURNING *`, [tokenData?.id])
-    if (deletedUser.rows[0].avatar) FileService.deleteFile(deletedUser.rows[0].avatar, 'avatars')
+    if (deletedUser.rows[0].avatar) await FileService.deleteFile(deletedUser.rows[0].avatar, 'avatars')
     return deletedUser.rows[0]
   }
 }

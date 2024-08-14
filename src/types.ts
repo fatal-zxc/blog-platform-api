@@ -2,14 +2,11 @@ import { Request } from 'express'
 import { UploadedFile } from 'express-fileupload'
 import { JwtPayload } from 'jsonwebtoken'
 
-export type UserReq = {
+export type User =  {
+  id: number
   username: string
   password: string
   email: string
-}
-
-export type User = UserReq & {
-  id: number
   avatar: string | null
 }
 

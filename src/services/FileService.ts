@@ -5,6 +5,7 @@ import util from 'util'
 import { UploadedFile } from 'express-fileupload'
 
 const readFile = util.promisify(fs.readFile)
+const deleteFile = util.promisify(fs.rm)
 
 class FileService {
   async saveImage(image: UploadedFile): Promise<string | undefined> {
@@ -39,10 +40,10 @@ class FileService {
     }
   }
 
-  deleteFile(fileName: string, dir: string): void {
+  async deleteFile(fileName: string, dir: string): Promise<void> {
     try {
       const filePath = path.resolve(`static/${dir}`, fileName)
-      fs.rm(filePath, () => {})
+      await deleteFile(filePath)
     } catch (e) {
       console.log(e)
     }
