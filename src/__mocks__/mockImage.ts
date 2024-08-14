@@ -29,3 +29,27 @@ export const mockImage: UploadedFile = {
   size: 12,
   md5: '123'
 }
+
+export const mockImageInvalid: UploadedFile = {
+  name: 'mock.jpg',
+  data: mockImageBuffer,
+  encoding: '7bit',
+  tempFilePath: '',
+  truncated: false,
+  mimetype: 'video/mp4',
+  mv: function(path: string, callback?: (err: any) => void): Promise<void> {
+    return new Promise((resolve, reject) => {
+      fs.writeFile(path, mockImage.data, (err) => {
+        if (err) {
+          if (callback) callback(err);
+          reject(err);
+        } else {
+          if (callback) callback(null);
+          resolve();
+        }
+      })
+    })
+  },
+  size: 12,
+  md5: '123'
+}
