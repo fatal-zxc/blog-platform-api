@@ -8,6 +8,7 @@ dotenv.config()
 import db from '../db'
 import FileService from './FileService'
 import { User, AuthToken } from '../types'
+import CustomError from '../error'
 
 const generateAccessToken = (id: number) => {
   const payload = { id }
@@ -18,37 +19,37 @@ const generateAccessToken = (id: number) => {
 export const validateUsersData = (username: string, password: string, email: string, exceptions?: string[]): void => {
   if (!exceptions?.includes('username')) {
     if (!username) {
-      throw new Error('отсутствует имя пользователя')
+      throw new CustomError('отсутствует имя пользователя', 400)
     }
     if (username.length > 20) {
-      throw new Error('имя пользователя больше 20 символов')
+      throw new CustomError('имя пользователя больше 20 символов', 400)
     }
     if (username.length < 3) {
-      throw new Error('имя пользователя меньше 3 символов')
+      throw new CustomError('имя пользователя меньше 3 символов', 400)
     }
   }
 
   if (!exceptions?.includes('password')) {
     if (!password) {
-      throw new Error('отсутствует пароль')
+      throw new CustomError('отсутствует пароль', 400)
     }
     if (password.length > 20) {
-      throw new Error('пароль больше 20 символов')
+      throw new CustomError('пароль больше 20 символов', 400)
     }
     if (password.length < 6) {
-      throw new Error('пароль меньше 6 символов')
+      throw new CustomError('пароль меньше 6 символов', 400)
     }
   }
 
   if (!exceptions?.includes('email')) {
     if (!email) {
-      throw new Error('отсутствует email')
+      throw new CustomError('отсутствует email', 400)
     }
     if (email.length > 40) {
-      throw new Error('email больше 40 символов')
+      throw new CustomError('email больше 40 символов', 400)
     }
     if (!/^[a-zA-Z0-9_.]+@[a-zA-Z0-9]+\.[a-zA-Z0-9-.]+$/.test(email)) {
-      throw new Error('некоректный email')
+      throw new CustomError('некоректный email', 400)
     }
   }
 }
@@ -69,7 +70,7 @@ class UserService {
     }
 
     if (avatar.mimetype.split('/')[0] !== 'image') {
-      throw new Error('неверный тип изображения')
+      throw new CustomError('неверный тип изображения', 400)
     }
 
     const fileName = await FileService.saveImage(avatar)
@@ -86,11 +87,11 @@ class UserService {
     validateUsersData('', password, email, ['username'])
     const user: { rows: User[] } = await db.query(`SELECT * FROM users where email = $1`, [email])
     if (!user.rows[0]) {
-      throw new Error('пользователь с таким email не найден')
+      throw new CustomError('пользователь с таким email не найден', 400)
     }
     const validPassword = bcryptjs.compareSync(password, user.rows[0].password)
     if (!validPassword) {
-      throw new Error('неверный пароль')
+      throw new CustomError('неверный пароль', 400)
     }
     const token = generateAccessToken(user.rows[0].id)
     return token
@@ -103,7 +104,7 @@ class UserService {
 
   async getOne(id: number) {
     if (!id) {
-      throw new Error('не указан id')
+      throw new CustomError('не указан id', 400)
     }
     const user: { rows: User[] } = await db.query(`SELECT * FROM users where id = $1`, [id])
     return user.rows[0]
@@ -139,7 +140,7 @@ class UserService {
     }
 
     if (avatar.mimetype.split('/')[0] !== 'image') {
-      throw new Error('неверный тип изображения')
+      throw new CustomError('неверный тип изображения', 400)
     }
 
     if (prevUser.rows[0].avatar) FileService.deleteFile(prevUser.rows[0].avatar, 'avatars')

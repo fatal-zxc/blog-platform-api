@@ -8,7 +8,7 @@ import { MyRequest } from '../types'
 const articleRouter = Router()
 
 articleRouter.get(
-  '/article/:id',
+  '/articles/:id',
   (req, res, next) => authMiddleware(req as MyRequest, res, next),
   (req, res) => ArticleController.getOne(req as MyRequest, res)
 )

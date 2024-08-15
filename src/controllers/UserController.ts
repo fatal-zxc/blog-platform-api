@@ -2,14 +2,16 @@ import { Response, Request } from 'express'
 
 import UserService from '../services/UserService'
 import { MyRequest } from '../types'
+import CustomError from '../error'
 
 class UserController {
   async create(req: MyRequest, res: Response) {
     try {
       const { user, token } = await UserService.create(req.body, req.files?.avatar)
-      res.json({ user, token })
+      res.status(201).json({ user, token })
     } catch (e: any) {
-      res.status(500).json(e.message)
+      if (e instanceof CustomError) res.status(e.statusCode).json(e.message)
+      else res.status(500).json(e)
     }
   }
 
@@ -18,7 +20,8 @@ class UserController {
       const token = await UserService.login(req.body)
       res.json({ token })
     } catch (e: any) {
-      res.status(500).json(e.message)
+      if (e instanceof CustomError) res.status(e.statusCode).json(e.message)
+      else res.status(500).json(e)
     }
   }
 
@@ -27,7 +30,8 @@ class UserController {
       const users = await UserService.getAll()
       return res.json(users)
     } catch (e: any) {
-      res.status(500).json(e.message)
+      if (e instanceof CustomError) res.status(e.statusCode).json(e.message)
+      else res.status(500).json(e)
     }
   }
 
@@ -36,7 +40,8 @@ class UserController {
       const user = await UserService.getOne(Number(req.params.id))
       return res.json(user)
     } catch (e: any) {
-      res.status(500).json(e.message)
+      if (e instanceof CustomError) res.status(e.statusCode).json(e.message)
+      else res.status(500).json(e)
     }
   }
 
@@ -45,7 +50,8 @@ class UserController {
       const user = await UserService.getUser(req.user)
       return res.json(user)
     } catch (e: any) {
-      res.status(500).json(e.message)
+      if (e instanceof CustomError) res.status(e.statusCode).json(e.message)
+      else res.status(500).json(e)
     }
   }
 
@@ -54,7 +60,8 @@ class UserController {
       const updatedUser = await UserService.update(req.body, req.user, req.files && req.files.avatar)
       return res.json(updatedUser)
     } catch (e: any) {
-      res.status(500).json(e.message)
+      if (e instanceof CustomError) res.status(e.statusCode).json(e.message)
+      else res.status(500).json(e)
     }
   }
 
@@ -63,7 +70,8 @@ class UserController {
       const deletedUser = await UserService.delete(req.user)
       return res.json(deletedUser)
     } catch (e: any) {
-      res.status(500).json(e.message)
+      if (e instanceof CustomError) res.status(e.statusCode).json(e.message)
+      else res.status(500).json(e)
     }
   }
 }

@@ -3,24 +3,25 @@ import { formatISO } from 'date-fns'
 import db from '../db'
 import FileService from './FileService'
 import { Article, AuthToken, User } from '../types'
+import CustomError from '../error'
 
 const validateArticle = (title: string, body: string, description: string): void => {
   if (!title) {
-    throw new Error('отсутствует заголовок')
+    throw new CustomError('отсутствует заголовок', 400)
   }
   if (title.length > 40) {
-    throw new Error('заголовок больше 40 символов')
+    throw new CustomError('заголовок больше 40 символов', 400)
   }
 
   if (!body) {
-    throw new Error('отсутствует тело')
+    throw new CustomError('отсутствует тело', 400)
   }
 
   if (!description) {
-    throw new Error('отсутствует описание')
+    throw new CustomError('отсутствует описание', 400)
   }
   if (description.length > 60) {
-    throw new Error('описание больше 60 символов')
+    throw new CustomError('описание больше 60 символов', 400)
   }
 }
 
@@ -69,7 +70,7 @@ class ArticleService {
 
   async getOne(id: number, tokenData?: AuthToken) {
     if (!id) {
-      throw new Error('не указан id')
+      throw new CustomError('не указан id', 400)
     }
     let authUserId: number = 0
     if (tokenData?.id) authUserId = tokenData.id
@@ -92,7 +93,7 @@ class ArticleService {
 
     const pretendentArticle: { rows: Article[] } = await db.query(`SELECT * FROM articles where id = $1`, [article_id])
     if (pretendentArticle.rows[0].user_id !== user_id) {
-      throw new Error('у вас нет доступа к чужим постам')
+      throw new CustomError('у вас нет доступа к чужим постам', 403)
     }
 
     const fileName = FileService.saveMD(body)
@@ -112,7 +113,7 @@ class ArticleService {
     const pretendentArticle: { rows: Article[] } = await db.query(`SELECT * FROM articles where id = $1`, [id])
     const { favorite_list } = pretendentArticle.rows[0]
     if (favorite_list.includes(user_id)) {
-      throw new Error('пост уже лайкнут')
+      throw new CustomError('пост уже лайкнут', 400)
     }
 
     const newFavoriteList = [...favorite_list, user_id]
@@ -129,7 +130,7 @@ class ArticleService {
     const pretendentArticle: { rows: Article[] } = await db.query(`SELECT * FROM articles where id = $1`, [id])
     const { favorite_list } = pretendentArticle.rows[0]
     if (!favorite_list.includes(user_id)) {
-      throw new Error('пост не лайкнут')
+      throw new CustomError('пост не лайкнут', 400)
     }
 
     const newFavoriteList = favorite_list.filter((num) => num !== user_id)
@@ -143,12 +144,12 @@ class ArticleService {
   async delete(id: number, tokenData?: AuthToken) {
     const user_id = tokenData?.id
     if (!id) {
-      throw new Error('не указан id')
+      throw new CustomError('не указан id', 400)
     }
 
     const pretendentArticle: { rows: Article[] } = await db.query(`SELECT * FROM articles where id = $1`, [id])
     if (pretendentArticle.rows[0].user_id !== user_id) {
-      throw new Error('у вас нет доступа к чужим постам')
+      throw new CustomError('у вас нет доступа к чужим постам', 403)
     }
 
     const deletedArticle: { rows: Article[] } = await db.query(`DELETE FROM articles where id = $1 RETURNING *`, [id])
